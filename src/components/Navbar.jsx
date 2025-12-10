@@ -4,7 +4,7 @@ const Navbar = () => {
   return (
     <nav className="w-64 min-h-screen bg-slate-900 text-white flex flex-col p-4 shadow-xl">
       <h1 className="text-2xl font-bold mb-8 text-blue-400 border-b border-gray-700 pb-4">
-        GovPE <span className="text-white text-sm block font-normal">Benchmark de Gráficos</span>
+        Teste Frameworks <span className="text-white text-sm block font-normal">Benchmark de Gráficos</span>
       </h1>
       
       <div className="flex flex-col gap-2">

@@ -1,72 +1,99 @@
 import React, { useState } from 'react';
 import { useVendasData } from '../hooks/useVendasData';
+import { useTheme } from '../context/ThemeContext'; 
+import ThemeSelector from '../components/ThemeSelector';
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveLine } from '@nivo/line';
 
-const nivoTheme = {
-  text: { fill: "#cbd5e1" },
-  axis: { ticks: { text: { fill: "#94a3b8" } }, legend: { text: { fill: "#cbd5e1" } } },
-  grid: { line: { stroke: "#334155" } },
-  tooltip: { container: { background: "#1e293b", color: "#fff" } }
-};
-
 const DashboardNivo = () => {
   const [ano, setAno] = useState('2024');
   const { data, loading } = useVendasData(ano);
+  const { colors, nivoTheme, layout } = useTheme();
 
-  if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-yellow-400">Carregando Nivo...</div>;
+  if (loading || !nivoTheme) return <div className={`min-h-screen flex items-center justify-center ${layout.bg} ${layout.textHighlight}`}>Carregando...</div>;
   const { kpis, vendasPorCategoria, vendasMensais } = data;
 
   return (
-    <div className="bg-slate-900 min-h-screen p-6 text-white">
-      <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-        <h1 className="text-2xl font-bold text-yellow-400">DASHBOARD NIVO</h1>
-        <select value={ano} onChange={(e) => setAno(e.target.value)} className="bg-slate-800 border border-slate-600 text-white rounded p-2">
-            <option value="2023">2023</option>
+    <div className={`min-h-screen p-6 transition-colors duration-300 ${layout.bg} ${layout.textMain}`}>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-700/30 pb-4">
+        <div>
+           <h1 className={`text-2xl font-bold ${layout.textHighlight}`}>DASHBOARD NIVO</h1>
+           <p className={`text-sm ${layout.textSub}`}>Análise Visual Avançada</p>
+        </div>
+        <select value={ano} onChange={(e) => setAno(e.target.value)} className={`bg-transparent border border-gray-500 rounded p-2 ${layout.textSub}`}>
             <option value="2024">2024</option>
-            <option value="2025">2025</option>
+            <option value="2023">2023</option>
         </select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+      <ThemeSelector />
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        {/* COLUNA 1: KPIs */}
         <div className="lg:col-span-1 flex flex-col gap-4">
-          <KpiCard label="TOTAL FATURADO" value={`R$ ${kpis.totalFaturado.toLocaleString()}`} />
-          <KpiCard label="TOTAL UNIDADES" value={kpis.totalUnidades} />
-          <KpiCard label="TOTAL PEDIDOS" value={kpis.totalPedidos} />
-          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 mt-auto">
-             <h3 className="text-slate-400 text-xs font-bold uppercase">DESTAQUE</h3>
-             <p className="text-xl text-yellow-400 font-bold">{kpis.produtoDestaque}</p>
+          <KpiCard label="Total Faturado" value={`R$ ${kpis.totalFaturado.toLocaleString()}`} layout={layout} />
+          <KpiCard label="Total Unidades" value={kpis.totalUnidades} layout={layout} />
+          <KpiCard label="Total Pedidos" value={kpis.totalPedidos} layout={layout} />
+          <div className={`p-6 rounded-xl border mt-auto shadow-lg ${layout.card}`}>
+             <h3 className={`text-xs font-bold uppercase ${layout.textSub}`}>DESTAQUE</h3>
+             <p className={`text-xl font-bold mt-2 ${layout.textHighlight}`}>{kpis.produtoDestaque}</p>
           </div>
         </div>
 
+        {/* COLUNA 2: GRÁFICOS */}
         <div className="lg:col-span-3 flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-80">
-            <ChartCard title="Por Categoria">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-96">
+            
+            <ChartCard title="Categorias" layout={layout}>
               <ResponsivePie
                 data={vendasPorCategoria.map(d => ({ id: d.name, label: d.name, value: d.value }))}
-                margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                innerRadius={0.5} padAngle={0.7} cornerRadius={3}
-                colors={{ scheme: 'nivo' }} theme={nivoTheme} enableArcLinkLabels={false}
+                margin={{ top: 30, right: 80, bottom: 30, left: 80 }}
+                innerRadius={0.6}
+                padAngle={2}
+                cornerRadius={4}
+                activeOuterRadiusOffset={8}
+                colors={colors} 
+                theme={nivoTheme} 
+                arcLinkLabelsTextColor={nivoTheme?.text?.fill}
               />
             </ChartCard>
 
-            <ChartCard title="Faturamento Mensal">
+            <ChartCard title="Faturamento Mensal" layout={layout}>
               <ResponsiveBar
-                data={vendasMensais} keys={['faturamento']} indexBy="name"
-                margin={{ top: 10, right: 10, bottom: 30, left: 40 }} padding={0.3}
-                colors={['#fbbf24']} theme={nivoTheme} axisLeft={{ format: v => `${v/1000}k` }}
+                data={vendasMensais}
+                keys={['faturamento']}
+                indexBy="name"
+                margin={{ top: 20, right: 20, bottom: 40, left: 60 }}
+                padding={0.3}
+                colors={[colors[1] || colors[0]]} 
+                theme={nivoTheme}
+                borderRadius={4}
+                enableGridX={false}
+                axisLeft={{ format: v => `${v/1000}k` }}
+                labelTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
               />
             </ChartCard>
           </div>
 
-          <ChartCard title="Tendência (Unidades)" height="h-64">
+          <ChartCard title="Tendência (Unidades)" layout={layout} height="h-80">
              <ResponsiveLine
                 data={[{ id: "unidades", data: vendasMensais.map(d => ({ x: d.name, y: d.unidades })) }]}
-                margin={{ top: 20, right: 20, bottom: 30, left: 40 }}
-                xScale={{ type: 'point' }} yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
-                enableArea={true} colors={['#8b5cf6']} theme={nivoTheme}
-                pointSize={8} pointColor={{ theme: 'background' }} pointBorderWidth={2} pointBorderColor={{ from: 'serieColor' }}
+                margin={{ top: 20, right: 30, bottom: 40, left: 50 }}
+                xScale={{ type: 'point' }}
+                yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
+                curve="monotoneX"
+                colors={[colors[2] || colors[0]]}
+                theme={nivoTheme}
+                lineWidth={3}
+                pointSize={10}
+                pointColor={{ theme: 'background' }}
+                pointBorderWidth={2}
+                pointBorderColor={{ from: 'serieColor' }}
+                enableArea={true}
+                areaOpacity={0.3}
+                useMesh={true}
              />
           </ChartCard>
         </div>
@@ -75,17 +102,17 @@ const DashboardNivo = () => {
   );
 };
 
-const KpiCard = ({ label, value }) => (
-  <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-    <h3 className="text-slate-400 text-xs font-bold uppercase mb-2">{label}</h3>
-    <p className="text-2xl font-bold text-white">{value}</p>
+const KpiCard = ({ label, value, layout }) => (
+  <div className={`p-6 rounded-xl border shadow-lg transition-transform hover:scale-105 ${layout.card}`}>
+    <h3 className={`text-xs font-bold uppercase mb-2 ${layout.textSub}`}>{label}</h3>
+    <p className={`text-2xl font-bold ${layout.textMain}`}>{value}</p>
   </div>
 );
 
-const ChartCard = ({ title, children, height = "h-full" }) => (
-  <div className={`bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg flex flex-col ${height}`}>
-    <h3 className="text-slate-300 font-semibold mb-2">{title}</h3>
-    <div className="flex-1 min-h-0">{children}</div>
+const ChartCard = ({ title, children, layout, height = "h-full" }) => (
+  <div className={`p-4 rounded-xl border shadow-lg flex flex-col ${height} ${layout.card}`}>
+    <h3 className={`font-semibold mb-4 ml-2 border-l-4 pl-2 ${layout.textHighlight.replace('text-', 'border-')}`}>{title}</h3>
+    <div className="flex-1 min-h-0 relative">{children}</div>
   </div>
 );
 

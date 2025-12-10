@@ -1,89 +1,115 @@
 import React, { useState } from 'react';
 import { useVendasData } from '../hooks/useVendasData';
-import { Card, Grid, Title, Text, Metric, DonutChart, BarChart, AreaChart } from "@tremor/react";
+import { useTheme } from '../context/ThemeContext';
+import ThemeSelector from '../components/ThemeSelector';
+import { DonutChart, BarChart, AreaChart } from "@tremor/react";
 
 const DashboardTremor = () => {
   const [ano, setAno] = useState('2024');
   const { data, loading } = useVendasData(ano);
+  const { mode, paletteName, isColorblind, layout } = useTheme();
 
-  if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-yellow-400">Carregando Tremor...</div>;
+  if (loading) return <div className={`min-h-screen flex items-center justify-center ${layout.bg} ${layout.textHighlight}`}>Carregando...</div>;
   const { kpis, vendasPorCategoria, vendasMensais } = data;
 
-  const dataFormatter = (number) => `R$ ${Intl.NumberFormat("pt-BR").format(number).toString()}`;
+  const getTremorColors = () => {
+    if (isColorblind) return ["blue", "yellow", "orange", "cyan"];
+    const mapping = {
+      padrao: ["blue", "amber", "rose", "emerald"],
+      ocean:  ["cyan", "blue", "indigo", "violet"],
+      forest: ["emerald", "lime", "yellow", "teal"],
+      fire:   ["red", "orange", "amber", "yellow"],
+    };
+    return mapping[paletteName] || ["blue", "cyan", "indigo", "violet"];
+  };
+
+  const tremorColors = getTremorColors();
 
   return (
-    <div className="bg-slate-900 min-h-screen p-6">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-700 pb-4 gap-4">
-        <Title className="text-yellow-400">DASHBOARD TREMOR</Title>
-        <select 
-            value={ano}
-            onChange={(e) => setAno(e.target.value)}
-            className="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg p-2.5"
-          >
-            <option value="2023">2023</option>
+    <div className={`min-h-screen p-6 transition-colors duration-300 ${layout.bg} ${layout.textMain} ${mode === 'dark' ? 'dark' : ''}`}>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-700/30 pb-4">
+        <div>
+           <h1 className={`text-2xl font-bold ${layout.textHighlight}`}>DASHBOARD TREMOR</h1>
+           <p className={`text-sm ${layout.textSub}`}>Minimalismo e Performance</p>
+        </div>
+        <select value={ano} onChange={(e) => setAno(e.target.value)} className={`bg-transparent border border-gray-500 rounded p-2 ${layout.textSub}`}>
             <option value="2024">2024</option>
-            <option value="2025">2025</option>
-          </select>
+            <option value="2023">2023</option>
+        </select>
       </div>
-      
-      <Grid numItems={1} numItemsLg={4} className="gap-6 h-full">
-        <div className="flex flex-col gap-4">
-          <Card className="bg-slate-800 ring-0 border border-slate-700">
-            <Text className="text-slate-400">Total Faturado</Text>
-            <Metric className="text-white">{dataFormatter(kpis.totalFaturado)}</Metric>
-          </Card>
-          <Card className="bg-slate-800 ring-0 border border-slate-700">
-            <Text className="text-slate-400">Total Unidades</Text>
-            <Metric className="text-white">{kpis.totalUnidades}</Metric>
-          </Card>
-          <div className="bg-slate-800 p-6 rounded-lg border border-slate-700 mt-auto">
-            <Text className="text-slate-400">Produto Destaque</Text>
-            <Metric className="text-yellow-400">{kpis.produtoDestaque}</Metric>
-          </div>
+
+      <ThemeSelector />
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <div className="lg:col-span-1 flex flex-col gap-4">
+           <KpiCard label="Total Faturado" value={`R$ ${kpis.totalFaturado.toLocaleString()}`} layout={layout} />
+           <KpiCard label="Total Unidades" value={kpis.totalUnidades} layout={layout} />
+           <KpiCard label="Pedidos" value={kpis.totalPedidos} layout={layout} />
+           <div className={`p-6 rounded-xl border mt-auto shadow-lg ${layout.card}`}>
+              <h3 className={`text-xs font-bold uppercase ${layout.textSub}`}>DESTAQUE</h3>
+              <p className={`text-xl font-bold mt-2 ${layout.textHighlight}`}>{kpis.produtoDestaque}</p>
+           </div>
         </div>
 
-        <div className="col-span-1 lg:col-span-3 flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-80">
-            <Card className="bg-slate-800 ring-0 border border-slate-700 flex flex-col">
-              <Title className="text-white">Por Categoria</Title>
-              <DonutChart
-                className="mt-4 flex-1"
-                data={vendasPorCategoria}
-                category="value"
-                index="name"
-                colors={["blue", "amber", "rose", "emerald"]}
-                variant="pie"
-              />
-            </Card>
-            <Card className="bg-slate-800 ring-0 border border-slate-700 flex flex-col">
-              <Title className="text-white">Faturamento Mensal</Title>
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-96">
+            <ChartCard title="Categorias" layout={layout}>
+              <div className="flex items-center justify-center h-full">
+                <DonutChart
+                  data={vendasPorCategoria}
+                  category="value"
+                  index="name"
+                  colors={tremorColors}
+                  variant="donut"
+                  className="h-60"
+                />
+              </div>
+            </ChartCard>
+
+            <ChartCard title="Faturamento Mensal" layout={layout}>
               <BarChart
-                className="mt-4 flex-1"
+                className="mt-4 h-64"
                 data={vendasMensais}
                 index="name"
                 categories={["faturamento"]}
-                colors={["amber"]}
-                valueFormatter={dataFormatter}
-                showLegend={false}
+                colors={[tremorColors[1]]}
+                yAxisWidth={48}
+                showAnimation={true}
               />
-            </Card>
+            </ChartCard>
           </div>
 
-          <Card className="bg-slate-800 ring-0 border border-slate-700 h-64 flex flex-col">
-            <Title className="text-white">Tendência (Unidades)</Title>
-            <AreaChart
-              className="mt-4 flex-1"
-              data={vendasMensais}
-              index="name"
-              categories={["unidades"]}
-              colors={["violet"]}
-              showLegend={false}
-            />
-          </Card>
+          <ChartCard title="Tendência (Unidades)" layout={layout} height="h-80">
+             <AreaChart
+                className="h-64 mt-4"
+                data={vendasMensais}
+                index="name"
+                categories={["unidades"]}
+                colors={[tremorColors[2] || tremorColors[0]]}
+                yAxisWidth={40}
+                showAnimation={true}
+             />
+          </ChartCard>
         </div>
-      </Grid>
+      </div>
     </div>
   );
 };
+
+const KpiCard = ({ label, value, layout }) => (
+  <div className={`p-6 rounded-xl border shadow-lg transition-transform hover:scale-105 ${layout.card}`}>
+    <h3 className={`text-xs font-bold uppercase mb-2 ${layout.textSub}`}>{label}</h3>
+    <p className={`text-2xl font-bold ${layout.textMain}`}>{value}</p>
+  </div>
+);
+
+const ChartCard = ({ title, children, layout, height = "h-full" }) => (
+  <div className={`p-4 rounded-xl border shadow-lg flex flex-col ${height} ${layout.card}`}>
+    <h3 className={`font-semibold mb-4 ml-2 border-l-4 pl-2 ${layout.textHighlight.replace('text-', 'border-')}`}>{title}</h3>
+    <div className="flex-1 min-h-0 relative w-full">{children}</div>
+  </div>
+);
 
 export default DashboardTremor;
