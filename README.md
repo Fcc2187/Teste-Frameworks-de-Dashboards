@@ -1,16 +1,22 @@
-# React + Vite
+# 📊 Dashboard Corporativo - Victory Charts
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Um dashboard interativo e responsivo desenvolvido em **React**, focado na visualização de dados de vendas corporativas. Este projeto utiliza a biblioteca **Victory** para gráficos complexos e **Tailwind CSS** para estilização moderna e temas dinâmicos.
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **KPIs em Tempo Real**: Visualização rápida de Faturamento, Unidades Vendidas e Quantidade de Pedidos.
+- **Gráficos Interativos (Victory)**:
+  - **Gráfico de Pizza (Donut)**: Distribuição de vendas por categoria (Ex: Amendoim, Coenzima Q10, etc).
+  - **Gráfico de Barras**: Faturamento mensal comparativo.
+  - **Gráfico de Área (Smooth)**: Tendência de unidades vendidas ao longo do ano com gradiente.
+- **Filtro por Ano**: Alterne os dados entre 2023 e 2024 dinamicamente.
+- **Gerenciamento de Temas**: Suporte a temas (Dark/Light/Colorblind) via Context API e Tailwind.
+- **Responsividade**: Layout adaptável (Mobile, Tablet e Desktop) usando CSS Grid.
 
-## React Compiler
+## 🛠️ Stack Tecnológica
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Core**: [React.js](https://react.dev/)
+- **Estilização**: [Tailwind CSS](https://tailwindcss.com/)
+- **Gráficos**: [Victory Charts](https://formidable.com/open-source/victory/)
+- **Gerenciamento de Estado**: React Context API (`ThemeContext`)
+- **Hooks Customizados**: `useVendasData` para lógica de dados.

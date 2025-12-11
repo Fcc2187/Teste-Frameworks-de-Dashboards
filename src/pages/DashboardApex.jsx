@@ -13,9 +13,9 @@ const DashboardApex = () => {
   if (loading) return <div className={`min-h-screen flex items-center justify-center ${layout.bg} ${layout.textHighlight}`}>Carregando...</div>;
   const { kpis, vendasPorCategoria, vendasMensais } = data;
 
-  const textSubHex = mode === 'dark' ? '#94a3b8' : '#64748b'; // Slate-400 vs Slate-500
-  const borderColorHex = mode === 'dark' ? '#334155' : '#e2e8f0'; // Slate-700 vs Slate-200
-  const tooltipTheme = mode; // 'dark' ou 'light'
+  const textSubHex = mode === 'dark' ? '#94a3b8' : '#64748b'; 
+  const borderColorHex = mode === 'dark' ? '#334155' : '#e2e8f0';
+  const tooltipTheme = mode;
 
   const commonOptions = {
     chart: { background: 'transparent', toolbar: { show: false }, animations: { enabled: true } },
@@ -29,7 +29,7 @@ const DashboardApex = () => {
     ...commonOptions,
     labels: vendasPorCategoria.map(d => d.name),
     colors: colors,
-    stroke: { show: true, colors: [mode === 'dark' ? '#1e293b' : '#fff'] }, // Borda do donut combina com o fundo do card
+    stroke: { show: true, colors: [mode === 'dark' ? '#1e293b' : '#fff'] },
     legend: { 
       position: 'bottom', 
       labels: { colors: textSubHex } 
